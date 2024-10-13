@@ -13,3 +13,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
+    is_admin: Mapped[bool] = mapped_column(default=False)
+    subscription_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey(
+            "subscriptions.id"), nullable=True, default=None)
