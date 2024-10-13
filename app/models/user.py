@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
 from uuid import UUID, uuid4
 
@@ -17,3 +17,6 @@ class User(Base):
     subscription_id: Mapped[UUID | None] = mapped_column(
         ForeignKey(
             "subscriptions.id"), nullable=True, default=None)
+
+    projects = relationship(
+        "Project", back_populates="owner", cascade="all, delete-orphan")
