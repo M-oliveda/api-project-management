@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from .core import app_settings
 from .utils import create_tables
-from .api.v1.endpoints import auth_router
+from .api.v1.endpoints import auth_router, subscription_router
 
 
 # Lifespan function to handle startup and shutdown events:
@@ -17,6 +17,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(debug=app_settings.DEBUG, title=app_settings.APP_NAME,
               description=app_settings.APP_DESCRIPTION, version=app_settings.APP_VERSION, lifespan=lifespan)
+app.include_router(subscription_router,
+                   prefix="/api/v1/subscription", tags=["Subscription"])
+
 
 # Include/Register API routers
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
