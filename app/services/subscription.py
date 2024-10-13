@@ -117,3 +117,13 @@ def create_checkout_session(return_url: str, subscription_type: SubscriptionType
 def get_stripe_session(session_id: str):
     session = stripe.checkout.Session.retrieve(session_id)
     return session
+
+
+def verify_user_subscription(db: Session, user_email: str):
+    user = db.query(User).filter(User.email == user_email).first()
+
+    if not user or not user.subscription_id:
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    return user.subscription_id is not None
