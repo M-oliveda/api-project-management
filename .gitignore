@@ -1,0 +1,15 @@
+# Ignore virtual environment folder
+.venv
+
+# Ignore .env files
+.env
+
+# Ignore python related files and folders
+__pycache__
+.pytest_cache
+
+# Ignore .db files
+*.db
+
+# Ignore vscode files and folders
+.vscode
