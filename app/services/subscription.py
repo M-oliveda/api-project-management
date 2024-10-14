@@ -125,5 +125,5 @@ def verify_user_subscription(db: Session, user_email: str):
     if not user or not user.subscription_id:
 
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+            status_code=status.HTTP_404_NOT_FOUND, detail="The user is not subscribed")
     return user.subscription_id is not None
