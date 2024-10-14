@@ -15,8 +15,11 @@ class Project(Base):
         default=datetime.now(timezone.utc))
     owner_id: Mapped[UUID] = mapped_column(
         ForeignKey("users.id"), nullable=False)
+    team_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("teams.id"), nullable=True)
 
     # Relationships
     owner = relationship("User", back_populates="projects")
     tasks = relationship("Task", back_populates="project",
                          cascade="all, delete-orphan")
+    team = relationship("Team", back_populates="projects")

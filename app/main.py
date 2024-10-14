@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from .core import app_settings
 from .utils import create_tables
-from .api.v1.endpoints import auth_router, subscription_router, projects_router, tasks_router
+from .api.v1.endpoints import auth_router, subscription_router, projects_router, tasks_router, teams_router
 
 
 # Lifespan function to handle startup and shutdown events:
@@ -22,6 +22,7 @@ app.include_router(subscription_router,
 app.include_router(
     projects_router, prefix="/api/v1/projects", tags=["Projects"])
 app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["tasks"])
+app.include_router(teams_router, prefix="/api/v1/teams", tags=["Teams"])
 
 
 # Include/Register API routers
