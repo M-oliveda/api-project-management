@@ -19,4 +19,10 @@ class User(Base):
             "subscriptions.id"), nullable=True, default=None)
 
     projects = relationship(
-        "Project", back_populates="owner", cascade="all, delete-orphan")
+        "Project", back_populates="owner")
+
+    owned_teams = relationship("Team", secondary="team_members",
+                               back_populates="owner")
+
+    team_member = relationship(
+        "Team", secondary="team_members", back_populates="members")
