@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, field_validator
+from uuid import UUID
 
 
 class Token(BaseModel):
@@ -22,3 +23,10 @@ class UserCreate(BaseModel):
 
 class UserCreated(BaseModel):
     message: str
+
+
+class UserInfo(BaseModel):
+    email: EmailStr
+    subscription_id: UUID | None = None
+    id: UUID
+    is_active: bool

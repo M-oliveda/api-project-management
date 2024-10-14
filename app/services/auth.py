@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.models.user import User
-from app.schemas.auth import UserCreate, UserLogin, Token
+from app.schemas.auth import UserCreate, UserLogin, Token, UserInfo
 from app.core.security import verify_password, get_password_hash, create_access_token, decode_access_token
 from app.db import get_db
 
@@ -47,3 +47,17 @@ def verify_token(db: Session, token: Token):
     data = decode_access_token(token.access_token)
     user = db.query(User).filter(User.email == data.get("sub")).first()
     return user is not None
+
+
+def get_user_info(db: Session, token: Token):
+    data = decode_access_token(token.access_token)
+    user = db.query(User).filter(User.email == data.get("sub")).first()
+
+    if user is not None:
+
+        return UserInfo(
+            email=user.email,
+            subscription_id=user.subscription_id,
+            id=user.id,
+            is_active=user.is_active
+        )
