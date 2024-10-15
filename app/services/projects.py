@@ -7,6 +7,16 @@ from uuid import UUID
 
 
 def create_project(db: Session, user: User, project_data: ProjectCreate):
+    project_alread = db.query(Project).filter(
+        Project.name == project_data.name, Project.owner_id == user.id).first()
+
+    if (project_alread):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Project already exists"
+
+        )
+
     project = Project(
         name=project_data.name,
         description=project_data.description,

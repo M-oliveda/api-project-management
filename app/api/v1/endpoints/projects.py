@@ -14,7 +14,7 @@ from app.services.auth import get_user_by_email
 router = APIRouter()
 
 
-@router.post("/new", response_model=ProjectResponse | None, status_code=201 | 400)
+@router.post("/new", response_model=ProjectResponse, status_code=201)
 def create_new_project(
     request: Request,
     project_data: ProjectCreate,
