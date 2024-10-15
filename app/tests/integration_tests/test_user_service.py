@@ -11,11 +11,11 @@ from fastapi import HTTPException
 from app.core import app_settings
 
 # Use an in-memory SQLite database for testing
-# file-based for persistence during tests
-SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///:memory:"
+
+
 # Create the engine and session maker
 engine = create_engine(
-    "sqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    app_settings.TEST_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
 )
 TestingSessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine
