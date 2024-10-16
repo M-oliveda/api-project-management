@@ -25,22 +25,22 @@ class TestProjectService(unittest.TestCase):
                                description="A test project", owner_id=self.user.id)
 
     def test_create_project(self):
-        # Test creating a project
+        # Set up mocks for the database
         self.db.add = MagicMock()
         self.db.commit = MagicMock()
         self.db.refresh = MagicMock()
+        self.db.query.return_value.filter.return_value.first.return_value = None
 
-        with patch("app.services.create_project", return_value=self.project):
-            created_project = create_project(
-                self.db, self.user, self.project_data)
+        created_project = create_project(
+            self.db, self.user, self.project_data)
 
+        # Assertions
         self.db.add.assert_called_once()
         self.db.commit.assert_called_once()
         self.db.refresh.assert_called_once()
-        self.assertEqual(created_project.name, self.project_data.name)
-        self.assertEqual(created_project.description,
-                         self.project_data.description)
-        self.assertEqual(created_project.owner_id, self.user.id)
+        assert created_project.name == self.project_data.name
+        assert created_project.description == self.project_data.description
+        assert created_project.owner_id == self.user.id
 
     def test_get_project_success(self):
         # Mock a successful query response

@@ -21,6 +21,3 @@ class ProjectResponse(ProjectBase):
     id: UUID4
     owner_id: UUID4
     created_at: datetime
-
-    class Config:
-        orm_mode = True

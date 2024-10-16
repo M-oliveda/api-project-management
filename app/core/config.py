@@ -17,4 +17,6 @@ class ApplicationSettings(BaseSettings):
     STRIPE_SUCCESS_URL: str = "http://localhost:3000/success"
     STRIPE_CANCEL_URL: str = "http://localhost:3000/cancel"
 
+    TEST_DATABASE_URL: str = "sqlite:///:memory:"
+
     model_config = SettingsConfigDict(env_file=".env")
