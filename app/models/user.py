@@ -25,4 +25,4 @@ class User(Base):
                                back_populates="owner")
 
     team_member = relationship(
-        "Team", secondary="team_members", back_populates="members")
+        "Team", secondary="team_members", back_populates="members", overlaps="owned_teams")

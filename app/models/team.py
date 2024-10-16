@@ -15,5 +15,5 @@ class Team(Base):
 
     owner = relationship("User", back_populates="owned_teams")
     members = relationship(
-        "User", secondary="team_members", back_populates="team_member")
+        "User", secondary="team_members", back_populates="team_member", overlaps="owned_teams")
     projects = relationship("Project", back_populates="team")
