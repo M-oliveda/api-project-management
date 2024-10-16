@@ -10,6 +10,9 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
+            - name: Enable debug mode
+              run: |
+                echo "::set-output name=debug::true"
             - uses: actions/checkout@v4
             - name: Set up Python
               uses: actions/setup-python@v5
