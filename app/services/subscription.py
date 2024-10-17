@@ -80,9 +80,8 @@ def cancel_subscription(db: Session, user_email: str):
             detail="Failed to cancel subscription."
         )
 
-    db.delete(user_unactive_subscription)
-    db.commit()
     user.subscription_id = None
+    db.delete(user_unactive_subscription)
     db.commit()
 
     return {"message": "Subscription canceled successfully."}

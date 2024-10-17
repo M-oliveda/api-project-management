@@ -8,6 +8,8 @@ from app.services import verify_token, verify_user_subscription
 from app.core.security import decode_access_token
 from app.schemas import Token
 from uuid import UUID
+from app.services.auth import get_user_by_email
+
 
 router = APIRouter()
 
@@ -32,7 +34,14 @@ def get_tasks_list(request: Request, db: Session = Depends(get_db)):
     if not token or not verify_token(db, Token(access_token=token, token_type="bearer")):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    return get_tasks(db)
+    user = decode_access_token(token)
+
+    user = get_user_by_email(db, user["sub"])
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return get_tasks(db, user.email)
 
 
 @router.get("/{task_id}", response_model=TaskInDB)
@@ -91,4 +100,9 @@ def read_tasks_by_project(request: Request, project_id: UUID, db: Session = Depe
     if not token or not verify_token(db, Token(access_token=token, token_type="bearer")):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    return get_tasks_by_project(db, project_id)
+    user = decode_access_token(token)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return get_tasks_by_project(db, project_id, user.email)

@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.user import User
-from app.models.team import Team
+from app.models import User, TeamMember, Team
 from app.schemas import TeamCreate, TeamUpdate, AddTeamMember, RemoveTeamMember
 from fastapi import HTTPException, status
 from uuid import UUID
@@ -12,10 +11,28 @@ def create_team(db: Session, team_data: TeamCreate):
     if already_existing_team:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Team already exists")
+
+    user = db.query(User).filter(User.id == team_data.owner_id).first()
+
+    if not user:
+        return None
+
+    # Create the new team instance
     team = Team(name=team_data.name, owner_id=team_data.owner_id)
+
+    # Add the team to the session
     db.add(team)
     db.commit()
     db.refresh(team)
+
+    # Add the owner as a team member
+    team_member = TeamMember(user_id=user.id, team_id=team.id)
+    db.add(team_member)
+    db.commit()
+
+    # Refresh to get the updated team with the new member
+    db.refresh(team)
+
     return team
 
 
