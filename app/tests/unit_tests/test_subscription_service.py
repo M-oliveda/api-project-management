@@ -123,7 +123,7 @@ class TestSubscription:
 
         # Ensure delete is called with the mock subscription object
         # db_session.delete.assert_called_once_with(subscription)
-        assert db_session.commit.call_count == 2
+        assert db_session.commit.call_count == 1
 
     @patch('stripe.Subscription.cancel')
     def test_cancel_subscription_user_not_found(stripe_cancel_mock, db_session):

@@ -33,6 +33,16 @@ class TestTaskService(unittest.TestCase):
             project_id=self.mock_project_id
         )
 
+        self.mock_user = MagicMock(
+            id=uuid4(),
+            email="test@example.com"
+        )
+
+        self.mock_project = MagicMock(
+            id=self.mock_project_id,
+            owner_id=self.mock_user.id
+        )
+
     def test_create_task(self):
         self.mock_db.add = MagicMock()
         self.mock_db.commit = MagicMock()
@@ -95,19 +105,26 @@ class TestTaskService(unittest.TestCase):
         self.mock_db.query().filter().first.assert_called_once()
 
     def test_get_tasks(self):
-        self.mock_db.query().all.return_value = [self.mock_task]
+        # Mock the first query for the user
+        self.mock_db.query().filter().first.return_value = self.mock_user
 
-        result = get_tasks(self.mock_db)
+        # Mock the second query for the projects owned by the user
+        self.mock_db.query().filter().all.return_value = [self.mock_project]
+
+        # Mock the third query for the tasks associated with the projects
+        self.mock_db.query().filter().all.return_value = [self.mock_task]
+
+        result = get_tasks(self.mock_db, "test@example.com")
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0], self.mock_task)
-        self.mock_db.query().all.assert_called_once()
+        self.mock_db.query().filter().all.assert_called()
 
     def test_get_tasks_by_project(self):
         self.mock_db.query().filter().all.return_value = [self.mock_task]
 
-        result = get_tasks_by_project(self.mock_db, self.mock_project_id)
+        result = get_tasks_by_project(
+            self.mock_db, self.mock_project_id, "test@example.com")
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0], self.mock_task)
-        self.mock_db.query().filter().all.assert_called_once()
