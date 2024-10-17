@@ -106,6 +106,7 @@ class TestSubscriptionService:
             register_response = client.get(
                 "api/v1/subscription/stripe-session-status?stripe_session_id=test_session_id&subscription_type=monthly", headers=headers)
 
+        print(response, register_response)
         assert response.status_code == 200
         assert response.json()["id"] is not None
         assert response.json()["client_secret"] is not None
