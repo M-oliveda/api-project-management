@@ -7,6 +7,17 @@ from uuid import UUID
 
 
 def create_project(db: Session, user: User, project_data: ProjectCreate):
+    project_alread = (
+        db.query(Project)
+        .filter(Project.name == project_data.name, Project.owner_id == user.id)
+        .first()
+    )
+
+    if project_alread:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Project already exists"
+        )
+
     project = Project(
         name=project_data.name,
         description=project_data.description,
@@ -19,21 +30,31 @@ def create_project(db: Session, user: User, project_data: ProjectCreate):
 
 
 def get_project(db: Session, project_id: UUID, user: User):
-    project = db.query(Project).filter(
-        Project.id == project_id, Project.owner_id == user.id).first()
+    project = (
+        db.query(Project)
+        .filter(Project.id == project_id, Project.owner_id == user.id)
+        .first()
+    )
     if not project:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Project not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
         )
     return project
 
 
 def get_user_projects(db: Session, user: User, skip: int = 0, limit: int = 10):
-    return db.query(Project).filter(Project.owner_id == user.id).offset(skip).limit(limit).all()
+    return (
+        db.query(Project)
+        .filter(Project.owner_id == user.id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
-def update_project(db: Session, project_id: UUID, user: User, project_data: ProjectUpdate):
+def update_project(
+    db: Session, project_id: UUID, user: User, project_data: ProjectUpdate
+):
     project = get_project(db, project_id, user)
     if project_data.name:
         project.name = project_data.name

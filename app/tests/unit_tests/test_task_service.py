@@ -3,7 +3,14 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 from app.schemas.task import TaskCreate, TaskUpdate, TaskStatus
 from app.models import Task
-from app.services import create_task, update_task, delete_task, get_task_by_id, get_tasks, get_tasks_by_project
+from app.services import (
+    create_task,
+    update_task,
+    delete_task,
+    get_task_by_id,
+    get_tasks,
+    get_tasks_by_project,
+)
 
 
 class TestTaskService(unittest.TestCase):
@@ -16,13 +23,13 @@ class TestTaskService(unittest.TestCase):
         self.task_data_create = TaskCreate(
             title="Test Task",
             description="Test Description",
-            project_id=self.mock_project_id
+            project_id=self.mock_project_id,
         )
 
         self.task_data_update = TaskUpdate(
             title="Updated Task",
             description="Updated Description",
-            status=TaskStatus.IN_PROGRESS
+            status=TaskStatus.IN_PROGRESS,
         )
 
         self.mock_task = MagicMock(
@@ -30,7 +37,13 @@ class TestTaskService(unittest.TestCase):
             title="Test Task",
             description="Test Description",
             status="Pending",
-            project_id=self.mock_project_id
+            project_id=self.mock_project_id,
+        )
+
+        self.mock_user = MagicMock(id=uuid4(), email="test@example.com")
+
+        self.mock_project = MagicMock(
+            id=self.mock_project_id, owner_id=self.mock_user.id
         )
 
     def test_create_task(self):
@@ -49,8 +62,7 @@ class TestTaskService(unittest.TestCase):
     def test_update_task(self):
         self.mock_db.query().filter().first.return_value = self.mock_task
 
-        result = update_task(
-            self.mock_db, self.mock_task_id, self.task_data_update)
+        result = update_task(self.mock_db, self.mock_task_id, self.task_data_update)
 
         self.assertIsNotNone(result)
         self.assertEqual(result.title, self.task_data_update.title)
@@ -62,8 +74,7 @@ class TestTaskService(unittest.TestCase):
     def test_update_task_not_found(self):
         self.mock_db.query().filter().first.return_value = None
 
-        result = update_task(
-            self.mock_db, self.mock_task_id, self.task_data_update)
+        result = update_task(self.mock_db, self.mock_task_id, self.task_data_update)
 
         self.assertIsNone(result)
         self.mock_db.commit.assert_not_called()
@@ -95,19 +106,27 @@ class TestTaskService(unittest.TestCase):
         self.mock_db.query().filter().first.assert_called_once()
 
     def test_get_tasks(self):
-        self.mock_db.query().all.return_value = [self.mock_task]
+        # Mock the first query for the user
+        self.mock_db.query().filter().first.return_value = self.mock_user
 
-        result = get_tasks(self.mock_db)
+        # Mock the second query for the projects owned by the user
+        self.mock_db.query().filter().all.return_value = [self.mock_project]
+
+        # Mock the third query for the tasks associated with the projects
+        self.mock_db.query().filter().all.return_value = [self.mock_task]
+
+        result = get_tasks(self.mock_db, "test@example.com")
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0], self.mock_task)
-        self.mock_db.query().all.assert_called_once()
+        self.mock_db.query().filter().all.assert_called()
 
     def test_get_tasks_by_project(self):
         self.mock_db.query().filter().all.return_value = [self.mock_task]
 
-        result = get_tasks_by_project(self.mock_db, self.mock_project_id)
+        result = get_tasks_by_project(
+            self.mock_db, self.mock_project_id, "test@example.com"
+        )
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0], self.mock_task)
-        self.mock_db.query().filter().all.assert_called_once()

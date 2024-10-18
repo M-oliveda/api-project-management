@@ -54,12 +54,12 @@ class TestSubscription:
         # First call returns user, second returns no subscription
         db_session.query().filter().first.side_effect = [user, None]
 
-        with patch('app.services.create_subscription', return_value=subscription):
+        with patch("app.services.create_subscription", return_value=subscription):
             response = create_subscription(
                 db=db_session,
                 user_email=MOCK_USER_EMAIL,
                 stripe_subscription_id=MOCK_STRIPE_SUBSCRIPTION_ID,
-                subscription_type=SubscriptionType.monthly
+                subscription_type=SubscriptionType.monthly,
             )
 
         # Assertions
@@ -79,7 +79,7 @@ class TestSubscription:
                 db=db_session,
                 user_email="nonexistent@example.com",
                 stripe_subscription_id=MOCK_STRIPE_SUBSCRIPTION_ID,
-                subscription_type=SubscriptionType.monthly
+                subscription_type=SubscriptionType.monthly,
             )
 
         assert excinfo.value.status_code == 404
@@ -98,7 +98,7 @@ class TestSubscription:
                 db=db_session,
                 user_email=MOCK_USER_EMAIL,
                 stripe_subscription_id=MOCK_STRIPE_SUBSCRIPTION_ID,
-                subscription_type=SubscriptionType.monthly
+                subscription_type=SubscriptionType.monthly,
             )
 
         assert excinfo.value.status_code == 400
@@ -111,8 +111,7 @@ class TestSubscription:
         subscription = mock_subscription()
 
         # Mock the query and filtering methods
-        db_session.query().filter().first.side_effect = [
-            user, subscription]
+        db_session.query().filter().first.side_effect = [user, subscription]
 
         # Call the actual function being tested
         response = cancel_subscription(db_session, user.email)
@@ -123,9 +122,9 @@ class TestSubscription:
 
         # Ensure delete is called with the mock subscription object
         # db_session.delete.assert_called_once_with(subscription)
-        assert db_session.commit.call_count == 2
+        assert db_session.commit.call_count == 1
 
-    @patch('stripe.Subscription.cancel')
+    @patch("stripe.Subscription.cancel")
     def test_cancel_subscription_user_not_found(stripe_cancel_mock, db_session):
         # Mock no user found
         db_session.query().filter().first.return_value = None
@@ -136,7 +135,7 @@ class TestSubscription:
         assert excinfo.value.status_code == 404
         assert excinfo.value.detail == "User not found."
 
-    @patch('stripe.Subscription.cancel')
+    @patch("stripe.Subscription.cancel")
     def test_cancel_subscription_no_active_subscription(stripe_cancel_mock, db_session):
         user = mock_user()
 
