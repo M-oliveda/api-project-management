@@ -15,16 +15,14 @@ class TaskStatus(PyEnum):
 class Task(Base):
     __tablename__ = "tasks"
 
-    id: Mapped[UUID] = mapped_column(primary_key=True, index=True,
-                                     default=uuid4)
+    id: Mapped[UUID] = mapped_column(primary_key=True, index=True, default=uuid4)
     title: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(nullable=True)
     status: Mapped[TaskStatus] = mapped_column(default=TaskStatus.TODO)
-    project_id: Mapped[str] = mapped_column(
-        ForeignKey("projects.id"), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        default=datetime.now(timezone.utc))
+    project_id: Mapped[str] = mapped_column(ForeignKey("projects.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
-        onupdate=datetime.now(timezone.utc), nullable=True, default=None)
+        onupdate=datetime.now(timezone.utc), nullable=True, default=None
+    )
 
     project = relationship("Project", back_populates="tasks")

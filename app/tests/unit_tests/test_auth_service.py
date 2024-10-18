@@ -17,7 +17,8 @@ class TestAuthService:
 
     @pytest.fixture
     def mock_user_data(self):
-        # Return a mock user object with attributes like email and hashed_password
+        # Return a mock user object with attributes like email and
+        # hashed_password
         mock_user = MagicMock()
         mock_user.email = "test@example.com"
         mock_user.hashed_password = get_password_hash("password123")
@@ -32,22 +33,22 @@ class TestAuthService:
         assert user.email == mock_user_data.email
 
     def test_create_user_success(self, mock_db, mock_user_data):
-        user_create = UserCreate(
-            email=mock_user_data.email, password="password123")
+        user_create = UserCreate(email=mock_user_data.email, password="password123")
 
         # Mock the behavior of checking if a user already exists
         mock_db.query().filter().first.return_value = None
 
-        with patch("app.core.security.get_password_hash", return_value=mock_user_data.hashed_password):
+        with patch(
+            "app.core.security.get_password_hash",
+            return_value=mock_user_data.hashed_password,
+        ):
             new_user = create_user(mock_db, user_create)
             assert new_user is not None
             assert new_user.email == user_create.email
-            assert verify_password(user_create.password,
-                                   new_user.hashed_password)
+            assert verify_password(user_create.password, new_user.hashed_password)
 
     def test_create_user_email_exists(self, mock_db, mock_user_data):
-        user_create = UserCreate(
-            email=mock_user_data.email, password="password123")
+        user_create = UserCreate(email=mock_user_data.email, password="password123")
 
         # Mock the behavior of an existing user in the database
         mock_db.query().filter().first.return_value = mock_user_data
@@ -60,7 +61,8 @@ class TestAuthService:
         mock_db.query().filter().first.return_value = mock_user_data
 
         authenticated_user = authenticate_user(
-            mock_db, mock_user_data.email, "password123")
+            mock_db, mock_user_data.email, "password123"
+        )
         assert authenticated_user is not None
         assert authenticated_user.email == mock_user_data.email
 
@@ -69,12 +71,12 @@ class TestAuthService:
         mock_db.query().filter().first.return_value = mock_user_data
 
         authenticated_user = authenticate_user(
-            mock_db, mock_user_data.email, "wrongpassword")
+            mock_db, mock_user_data.email, "wrongpassword"
+        )
         assert authenticated_user is None
 
     def test_login_user_success(self, mock_db, mock_user_data):
-        login_data = UserLogin(
-            email=mock_user_data.email, password="password123")
+        login_data = UserLogin(email=mock_user_data.email, password="password123")
 
         # Mock the behavior of the authentication function
         with patch("app.services.auth.authenticate_user", return_value=mock_user_data):
@@ -83,8 +85,7 @@ class TestAuthService:
             assert "access_token" in token
 
     def test_login_user_invalid_credentials(self, mock_db, mock_user_data):
-        login_data = UserLogin(email=mock_user_data.email,
-                               password="wrongpassword")
+        login_data = UserLogin(email=mock_user_data.email, password="wrongpassword")
 
         with patch("app.services.auth.authenticate_user", return_value=None):
             with pytest.raises(HTTPException) as exc_info:

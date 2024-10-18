@@ -2,7 +2,12 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.schemas.auth import UserCreate, UserLogin, Token, UserInfo
-from app.core.security import verify_password, get_password_hash, create_access_token, decode_access_token
+from app.core.security import (
+    verify_password,
+    get_password_hash,
+    create_access_token,
+    decode_access_token,
+)
 from app.db import get_db
 
 
@@ -24,8 +29,7 @@ def create_user(db: Session, user_data: UserCreate):
         raise ValueError("Email is already registered")
 
     hashed_password = get_password_hash(user_data.password)
-    db_user = User(email=user_data.email,
-                   hashed_password=hashed_password)
+    db_user = User(email=user_data.email, hashed_password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -36,8 +40,7 @@ def login_user(db: Session, login_data: UserLogin):
     user = authenticate_user(db, login_data.email, login_data.password)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
         )
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
@@ -59,5 +62,5 @@ def get_user_info(db: Session, token: Token):
             email=user.email,
             subscription_id=user.subscription_id,
             id=user.id,
-            is_active=user.is_active
+            is_active=user.is_active,
         )
