@@ -2,6 +2,7 @@ name: Python Project Management API Service -- Testing
 
 on:
     pull_request:
+    push:
         branches:
             - develop
 
