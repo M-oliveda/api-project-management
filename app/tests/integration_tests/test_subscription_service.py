@@ -15,10 +15,11 @@ from uuid import uuid4
 
 # Create a test engine and session for SQLite
 engine = create_engine(
-    app_settings.TEST_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
+    app_settings.TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
-TestingSessionLocal = sessionmaker(
-    autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 @pytest.fixture(scope="module")
@@ -54,10 +55,7 @@ class TestSubscriptionService:
     @pytest.fixture()
     def create_test_user(self, client):
         # Test user credentials
-        user_data = {
-            "email": "test@example.com",
-            "password": "password123"
-        }
+        user_data = {"email": "test@example.com", "password": "password123"}
 
         # Attempt to log in first
         login_response = client.post("/api/v1/auth/login/", json=user_data)
@@ -65,8 +63,7 @@ class TestSubscriptionService:
             return login_response.json()["access_token"]
 
         # If login fails (user not found), register the user
-        register_response = client.post(
-            "/api/v1/auth/register/", json=user_data)
+        register_response = client.post("/api/v1/auth/register/", json=user_data)
         assert register_response.status_code == 201
 
         # Login again to get the access token
@@ -74,16 +71,25 @@ class TestSubscriptionService:
         assert login_response.status_code == 200
         return login_response.json()["access_token"]
 
-    @patch("app.services.subscription.stripe.Subscription.create", return_value={"id": "sub_test_123", "client_secret": "test_client_secret"})
+    @patch(
+        "app.services.subscription.stripe.Subscription.create",
+        return_value={"id": "sub_test_123", "client_secret": "test_client_secret"},
+    )
     @patch("stripe.checkout.Session.retrieve")
-    def test_create_subscription(self, mock_retrieve_session, mock_create_subscription, client, create_test_user):
+    def test_create_subscription(
+        self, mock_retrieve_session, mock_create_subscription, client, create_test_user
+    ):
         # Mock the Stripe subscription creation
         mock_create_subscription.return_value = {
-            "id": "sub_test_123", "client_secret": "test_client_secret"}
+            "id": "sub_test_123",
+            "client_secret": "test_client_secret",
+        }
 
         # Set the Authorization header with the token
-        headers = {"Authorization": create_test_user,
-                   "Origin": "https://yourdomain.com"}
+        headers = {
+            "Authorization": create_test_user,
+            "Origin": "https://yourdomain.com",
+        }
 
         mock_stripe_session = MagicMock()
         mock_stripe_session.status = "complete"
@@ -95,16 +101,25 @@ class TestSubscriptionService:
 
         mock_retrieve_session.return_value = mock_stripe_session
 
-        with patch("app.services.create_checkout_session", return_value={"client_secret": "test_client_secret", "id": "test_session_id", "success_url": "https://yourdomain.com/success?session_id={CHECKOUT_SESSION_ID}",
-                                                                         "cancel_url": "https://yourdomain.com/cancel"}):
+        with patch(
+            "app.services.create_checkout_session",
+            return_value={
+                "client_secret": "test_client_secret",
+                "id": "test_session_id",
+                "success_url": "https://yourdomain.com/success?session_id={CHECKOUT_SESSION_ID}",
+                "cancel_url": "https://yourdomain.com/cancel",
+            },
+        ):
             response = client.post(
-                f"/api/v1/subscription/create-checkout-session?subscription_type={
-                    SubscriptionType.monthly.value}",
-                headers=headers
+                f"/api/v1/subscription/create-checkout-session?subscription_type="
+                f"{SubscriptionType.monthly.value}",
+                headers=headers,
             )
 
             register_response = client.get(
-                "api/v1/subscription/stripe-session-status?stripe_session_id=test_session_id&subscription_type=monthly", headers=headers)
+                "api/v1/subscription/stripe-session-status?stripe_session_id=test_session_id&subscription_type=monthly",
+                headers=headers,
+            )
 
         print(response, register_response)
         assert response.status_code == 200
@@ -112,17 +127,20 @@ class TestSubscriptionService:
         assert response.json()["client_secret"] is not None
 
         assert register_response.status_code == 200
-        assert register_response.json(
-        )["message"] == "Subscription created successfully"
+        assert (
+            register_response.json()["message"] == "Subscription created successfully"
+        )
 
     def test_cancel_subscription_user_not_found(self, client, create_test_user):
         # Set the Authorization header with the token
-        headers = {"Authorization": create_test_user,
-                   "Origin": "https://yourdomain.com"}
+        headers = {
+            "Authorization": create_test_user,
+            "Origin": "https://yourdomain.com",
+        }
 
         response = client.post(
             f"/api/v1/subscription/cancel-subscription?user_email=nonexistent@example.com",
-            headers=headers
+            headers=headers,
         )
 
         assert response.status_code == 404
@@ -130,8 +148,10 @@ class TestSubscriptionService:
 
     def test_cancel_subscription_sucessful(self, client, create_test_user):
         # Set the Authorization hader with the token
-        headers = {"Authorization": create_test_user,
-                   "Origin": "https://yourdomain.com"}
+        headers = {
+            "Authorization": create_test_user,
+            "Origin": "https://yourdomain.com",
+        }
 
         mock_stripe_subscription = MagicMock()
         mock_stripe_subscription.status = "canceled"
@@ -139,23 +159,23 @@ class TestSubscriptionService:
         with patch("stripe.Subscription.cancel", return_value=mock_stripe_subscription):
             response = client.post(
                 "/api/v1/subscription/cancel-subscription?user_email=test@example.com",
-                headers=headers
+                headers=headers,
             )
 
         assert response.status_code == 200
-        assert response.json()[
-            "message"] == "Subscription canceled successfully."
+        assert response.json()["message"] == "Subscription canceled successfully."
 
     def test_cancel_subscription_no_active_subscription(self, client, create_test_user):
         # Set the Authorization header with the token
-        headers = {"Authorization": create_test_user,
-                   "Origin": "https://yourdomain.com"}
+        headers = {
+            "Authorization": create_test_user,
+            "Origin": "https://yourdomain.com",
+        }
 
         response = client.post(
             "/api/v1/subscription/cancel-subscription?user_email=test@example.com",
-            headers=headers
+            headers=headers,
         )
 
         assert response.status_code == 404
-        assert response.json()[
-            "detail"] == "User does not have an active subscription."
+        assert response.json()["detail"] == "User does not have an active subscription."

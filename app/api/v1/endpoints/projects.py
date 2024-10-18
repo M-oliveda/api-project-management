@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from typing import List
-from app.services import create_project, get_user_projects, update_project, delete_project, get_project
+from app.services import (
+    create_project,
+    get_user_projects,
+    update_project,
+    delete_project,
+    get_project,
+)
 from app.schemas import ProjectCreate, ProjectResponse, ProjectUpdate
 from app.db import get_db
 from app.services.auth import verify_token
@@ -16,12 +22,12 @@ router = APIRouter()
 
 @router.post("/new", response_model=ProjectResponse, status_code=201)
 def create_new_project(
-    request: Request,
-    project_data: ProjectCreate,
-    db: Session = Depends(get_db)
+    request: Request, project_data: ProjectCreate, db: Session = Depends(get_db)
 ):
     token = request.headers.get("Authorization")
-    if not token or not verify_token(db, Token(access_token=token, token_type="bearer")):
+    if not token or not verify_token(
+        db, Token(access_token=token, token_type="bearer")
+    ):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     decode_token = decode_access_token(token)
@@ -40,11 +46,14 @@ def create_new_project(
 @router.get("/", response_model=List[ProjectResponse])
 def list_user_projects(
     request: Request,
-    skip: int = 0, limit: int = 10,
+    skip: int = 0,
+    limit: int = 10,
     db: Session = Depends(get_db),
 ):
     token = request.headers.get("Authorization")
-    if not token or not verify_token(db, Token(access_token=token, token_type="bearer")):
+    if not token or not verify_token(
+        db, Token(access_token=token, token_type="bearer")
+    ):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     user = decode_access_token(token)
@@ -65,7 +74,9 @@ def get_project_by_id(
 ):
 
     token = request.headers.get("Authorization")
-    if not token or not verify_token(db, Token(access_token=token, token_type="bearer")):
+    if not token or not verify_token(
+        db, Token(access_token=token, token_type="bearer")
+    ):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     user = decode_access_token(token)
@@ -87,7 +98,9 @@ def update_existing_project(
 ):
 
     token = request.headers.get("Authorization")
-    if not token or not verify_token(db, Token(access_token=token, token_type="bearer")):
+    if not token or not verify_token(
+        db, Token(access_token=token, token_type="bearer")
+    ):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     decode_token = decode_access_token(token)
@@ -110,7 +123,9 @@ def delete_existing_project(
     db: Session = Depends(get_db),
 ):
     token = request.headers.get("Authorization")
-    if not token or not verify_token(db, Token(access_token=token, token_type="bearer")):
+    if not token or not verify_token(
+        db, Token(access_token=token, token_type="bearer")
+    ):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     user = decode_access_token(token)

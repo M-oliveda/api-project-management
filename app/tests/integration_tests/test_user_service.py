@@ -15,11 +15,11 @@ from app.core import app_settings
 
 # Create the engine and session maker
 engine = create_engine(
-    app_settings.TEST_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
+    app_settings.TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
-TestingSessionLocal = sessionmaker(
-    autocommit=False, autoflush=False, bind=engine
-)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 @pytest.fixture(scope="module")
@@ -67,7 +67,8 @@ class TestUserService:
             mock_create_user.return_value = {"email": "test@example.com"}
 
             response = client.post(
-                "/api/v1/auth/register/", json={"email": "test@example.com", "password": "password123"}
+                "/api/v1/auth/register/",
+                json={"email": "test@example.com", "password": "password123"},
             )
 
             assert response.status_code == 201
@@ -84,7 +85,8 @@ class TestUserService:
             mock_create_user.side_effect = mock_create_user_side_effect
 
             response = client.post(
-                "/api/v1/auth/register/", json={"email": "test@example.com", "password": "password456"}
+                "/api/v1/auth/register/",
+                json={"email": "test@example.com", "password": "password456"},
             )
 
             assert response.status_code == 400
@@ -94,12 +96,14 @@ class TestUserService:
         with patch("app.services.auth.get_user_by_email") as mock_get_user:
             with patch("app.core.security.verify_password") as mock_verify_password:
                 mock_get_user.return_value = {
-                    "email": "test@example.com", "password": "hashedpassword"
+                    "email": "test@example.com",
+                    "password": "hashedpassword",
                 }
                 mock_verify_password.return_value = True
 
                 response = client.post(
-                    "/api/v1/auth/login/", json={"email": "test@example.com", "password": "password123"}
+                    "/api/v1/auth/login/",
+                    json={"email": "test@example.com", "password": "password123"},
                 )
 
                 assert response.status_code == 200
@@ -112,7 +116,8 @@ class TestUserService:
                 mock_verify_password.return_value = False
 
                 response = client.post(
-                    "/api/v1/auth/login/", json={"email": "test@example.com", "password": "wrongpassword"}
+                    "/api/v1/auth/login/",
+                    json={"email": "test@example.com", "password": "wrongpassword"},
                 )
 
                 assert response.status_code == 401
