@@ -28,7 +28,10 @@ async def create_checkout_session_endpoint(
     try:
         # Create a Stripe checkout session
         checkout_session = create_checkout_session(
-            "{request_obj}/return".format(request_obj=request.headers.get("Origin")),
+            "{request_obj}/return?session_id={CHECKOUT_SESSION_ID}".format(
+                request_obj=request.headers.get("Origin"),
+                CHECKOUT_SESSION_ID="{CHECKOUT_SESSION_ID}",
+            ),
             subscription_type,
             decode_access_token(token)["sub"],
         )
@@ -64,7 +67,8 @@ async def check_stripe_session_status(
             or session.subscription is None
             or session.customer_email is None
         ):
-            raise HTTPException(status_code=400, detail="Invalid customer details")
+            raise HTTPException(
+                status_code=400, detail="Invalid customer details")
 
         subscription_id = (
             session.subscription.id
@@ -77,7 +81,8 @@ async def check_stripe_session_status(
         )
 
         if subscription is None:
-            raise HTTPException(status_code=400, detail="Subscription creation failed")
+            raise HTTPException(
+                status_code=400, detail="Subscription creation failed")
 
         return {
             "message": "Subscription created successfully",
